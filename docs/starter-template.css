@@ -1,11 +1,19 @@
-@import url(https://db.onlinewebfonts.com/c/6ab539c6fc2b21ff0b149b3d06d7f97c?family=Minecraft);
+@font-face {
+    font-family: 'Minecraft-Regular';
+    src:url('Minecraft-Regular.ttf.woff') format('woff'),
+        url('Minecraft-Regular.ttf.svg#Minecraft-Regular') format('svg'),
+        url('Minecraft-Regular.ttf.eot'),
+        url('Minecraft-Regular.ttf.eot?#iefix') format('embedded-opentype'); 
+    font-weight: normal;
+    font-style: normal;
+}
 
 body {
   padding-top: 5rem;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Minecraft', Fallback, sans-serif;
+  font-family: 'Minecraft-Regular', Fallback, sans-serif;
 	padding-top: 10px;
 	padding-bottom: 10px;
 }
@@ -48,5 +56,14 @@ p, code {
 .black-bg {
   background-color: #353535;
   color: white;
+}
+
+.cite-div {
+margin: 5px;
+padding: 5px;
+border: 2px dashed black;
+background-color: light-green;
+color: black;
+
 }
 
