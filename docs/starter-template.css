@@ -8,18 +8,21 @@
     font-style: normal;
 }
 
+* {
+  font-family: 'Minecraft-Regular', Fallback, sans-serif;
+
+}
+
 body {
   padding-top: 5rem;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Minecraft-Regular', Fallback, sans-serif;
 	padding-top: 10px;
 	padding-bottom: 10px;
 }
 
 p, code {
-	font-size: 20px;
 	padding-top: 10px;
 	padding-bottom: 10px;
 }
@@ -31,6 +34,8 @@ p, code {
 .page-element {
   padding-top: 60px;
   padding-bottom: 80px;
+  padding-left: 20%;
+  padding-right: 20%;
 }
 
 .page-element:after {
@@ -51,6 +56,10 @@ p, code {
 
 .blue-bg {
   background-color: #346896;
+}
+
+.blue-bg a:link, .blue-bg a:visited {
+color: orange;
 }
 
 .black-bg {
