@@ -51,6 +51,19 @@ p, code {
     background-repeat: no-repeat;
     background-position: left bottom;
 }
+.page-element:nth-child(odd):after {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 80px;
+    padding: 0;
+    margin: 0;
+    left: 0;
+    background-image: url(thin.png);
+    background-repeat: no-repeat;
+    background-position: right bottom;
+}
 
 
 
