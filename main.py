@@ -1029,6 +1029,7 @@ class Handler():
                 reordering.remove(5)
                 if not args.crf:
                     reordering.remove(7)
+            short = len(reordering) != 8
             fosi = 30
             scalef = 3
             font = ImageFont.truetype("./isy_minerl/segm/etc/Ubuntu-R.ttf", fosi)
@@ -1067,12 +1068,13 @@ class Handler():
             titlesarray = np.tile(titlesarray, (frames.shape[0], 1, 1, 1))
 
             legend = ["GREEN = True Positive", "RED = False Negative", "GRAY = False Positive", "BLACK = True Negative"]
-            legendarray = Image.fromarray(np.zeros((fosi*2, frames.shape[2], 3), dtype=np.uint8))
+            legendarray = Image.fromarray(np.zeros((fosi*(4 if short else 2), frames.shape[2], 3), dtype=np.uint8))
             legendcolors = [(0,255,0), (255,0,0), (125,125,125), (255,255,255)]
             legendspacing = int((frames.shape[2]-2)/len(legend))
             draw = ImageDraw.Draw(legendarray)
             for i,l in enumerate(legend):
-                draw.text((fosi//5 + i*legendspacing, fosi//5), l, font=font, fill=legendcolors[i])
+                conditionallinebreak = "\n" if short and i>1 else ""
+                draw.text((fosi//5 + i*legendspacing, fosi//5), l+conditionallinebreak, font=font, fill=legendcolors[i])
             legendarray = np.tile(legendarray, (frames.shape[0], 1, 1, 1))
 
             frames = np.concatenate((titlesarray, frames, legendarray), axis=1)
