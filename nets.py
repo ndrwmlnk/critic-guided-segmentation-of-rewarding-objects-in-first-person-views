@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from itertools import chain
 import torchvision.models as visionmodels
-from torchvision import transforms
 from matplotlib.colors import rgb_to_hsv, hsv_to_rgb
 import numpy as np
 
@@ -196,14 +195,14 @@ class NewCritic(nn.Module):
         )
 
     def forward(self, X, collect=False):
-            embeds = []
-            # print(list(self.features))
-            for layer in list(self.features):
-                X = layer(X)
-                if collect and isinstance(layer, type(self.pool)):
-                    embeds.append(X)
-            if collect:
+        embeds = []
+        # print(list(self.features))
+        for layer in list(self.features):
+            X = layer(X)
+            if collect and isinstance(layer, type(self.pool)):
                 embeds.append(X)
+        if collect:
+            embeds.append(X)
         # print("last embed", X.shape)
         pred = self.crit(X)
 
