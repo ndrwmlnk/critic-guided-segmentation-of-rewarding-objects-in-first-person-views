@@ -887,7 +887,7 @@ class Handler():
     def eval(self, folder="", vis=False):
         self.log("STARTING EVAL")
         args = self.args
-        resultdir = self.path
+        resultdir = "eval-results/"+args.name+"/"
         scale = 4
         ph = 32
         pad = 0
@@ -1077,7 +1077,7 @@ class Handler():
 
             frames = np.concatenate((titlesarray, frames, legendarray), axis=1)
             
-            vidwrite(resultdir + f"iou={round(iou, 3)}.avi", frames, framerate=10)
+            vidwrite(f"iou={round(iou, 3)}.avi", frames, framerate=10)
 
         """
         # Y = Y(Y > 0.1)
