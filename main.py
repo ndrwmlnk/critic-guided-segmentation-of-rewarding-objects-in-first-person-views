@@ -1462,10 +1462,10 @@ def main():
     parser.add_argument("-trunk", action="store_true")
     parser.add_argument("-higheval", action="store_true")
     parser.add_argument("-separate", action="store_true")
-    parser.add_argument("-salience", action="store_true")
-    parser.add_argument("-salglobal", action="store_true")
+    parser.add_argument("-salience", type=bool, default=True)
+    parser.add_argument("-salglobal", type=bool, default=True)
     parser.add_argument("-grabcut", action="store_true")
-    parser.add_argument("-crf", action="store_true")
+    parser.add_argument("-crf", type=bool, default=True)
     parser.add_argument("-directeval", action="store_true")
     parser.add_argument("-soft", action="store_true")
     parser.add_argument("-resimages", action="store_true")
@@ -1473,7 +1473,7 @@ def main():
     parser.add_argument("-eval", action="store_true")
 
 
-    parser.add_argument("--salience-thresh", type=float, default="2")
+    parser.add_argument("--salience-thresh", type=float, default="1.5")
     parser.add_argument("--eval-thresh", type=float, default=0.05)
     parser.add_argument("--dropout", type=float, default=0.3)
     parser.add_argument("--lr", type=float, default=0.00005)
