@@ -4,6 +4,8 @@ from matplotlib import pyplot as plt
 import os
 import sys
 
+from numpy.core.defchararray import join
+
 from nets import *
 import numpy as np
 import torch as T
@@ -88,13 +90,13 @@ class Handler():
                                      if argdict[a]])
 
         # SETUP PATHS
-        self.path = f"runs/CriticMasker/{args.name}/"
+        self.path = f"{args.name}/"
         self.train_path = self.path + "train/"
         self.result_path = self.path + "results/"
         self.save_path = self.path + "saves/"
         self.data_path = "runs/data/straight/"
         self.save_paths = {
-            self.criticname: f"runs/CriticMasker/critic-{self.critic_args}.pt",
+            self.criticname: f"{self.save_path}critic-{self.critic_args}.pt",
             self.maskername: f"{self.save_path}masker-{self.masker_args}.pt"
         }
 
@@ -562,10 +564,11 @@ class Handler():
             if not (epoch + 1) % args.saveevery:
                 self.save_models(modelnames=[self.maskername])
 
-            ious = self.eval()
-            if ious[0] > self.ious[0]:
-                self.ious = ious
-                self.bestepoch = epoch
+            if False:
+                ious = self.eval()
+                if ious[0] > self.ious[0]:
+                    self.ious = ious
+                    self.bestepoch = epoch
 
         print()
         self.save_models(modelnames=[self.maskername])
@@ -590,7 +593,7 @@ class Handler():
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
         ywid = batches[0].shape[1]
         xwid = batches[0].shape[2]
-        out = cv2.VideoWriter(resultdir + result_args + '.avi', fourcc, 20.0, (xwid * len(batches), ywid))
+        out = cv2.VideoWriter(resultdir + result_args + '.mp4', fourcc, 20.0, (xwid * len(batches), ywid))
 
         frames = np.concatenate(batches, axis=2)
         frames = (255 * frames).astype(np.uint8)
@@ -676,7 +679,7 @@ class Handler():
 
         rgb = hsv_to_rgb(X)
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        video_path = resultdir + result_args + '.avi'
+        video_path = resultdir + result_args + '.mp4'
         out = cv2.VideoWriter(video_path, fourcc, 20.0, (64 * 4, 64))
         print("generating result video:", video_path)
         for idx, frame in enumerate(probs):
@@ -1079,7 +1082,9 @@ class Handler():
 
             frames = np.concatenate((titlesarray, frames, legendarray), axis=1)
             
-            vidwrite(f"iou={round(iou, 3)}.avi", frames, framerate=10)
+            if args.output_video:
+                args.output_video += "/"
+            vidwrite(f"{args.output_video}iou={round(iou, 3)}.mp4", frames, framerate=10)
 
         """
         # Y = Y(Y > 0.1)
@@ -1118,7 +1123,9 @@ class Handler():
         salM = []
         allM = []
 
-        X = np.stack([np.array(Image.open(f"{folder}/{img_file_name}")) for img_file_name in os.listdir(folder)])/255.0
+        img_names = os.listdir(folder)
+        X = np.stack([np.array(Image.open(f"{folder}/{img_file_name}")) for img_file_name in img_names])/255.0
+        img_names = [a[:-1-a[::-1].index(".")] for a in img_names if "." in a]
 
         for bidx in range(0, len(X), batchsize):
             print("segmentation in progress", round(bidx / len(X), 2), end="%\r")
@@ -1145,15 +1152,18 @@ class Handler():
 
         print("postprocessing...")
         M = np.concatenate(M, axis=0)
-        if args.salience:
+        if args.process_salience:
             salM = np.concatenate(salM, axis=0)
         preds = np.concatenate(preds, axis=0)
         imgs = np.concatenate(imgs, axis=0)
+        allM.append(M)
+        self.log("Mshape", M.shape)
 
-        hardM = M>args.eval_thresh
-        #hardM = hardM.transpose(0, 2, 3, 1)
-        self.log("Mshape", M.shape, "HardM", hardM.shape)
-        allM.extend([M, hardM])
+        if args.binarymaskthreshold:
+            hardM = M>=args.binarymaskthreshold
+            #hardM = hardM.transpose(0, 2, 3, 1)
+            self.log("HardM", hardM.shape)
+            allM.append(hardM)
 
         if args.crf:               
             crfM = self.crf(imgs, M, np.zeros_like(M))
@@ -1162,7 +1172,7 @@ class Handler():
 
         #grid = [float(e) for e in args.grid.split("-")] or args.eval
         #print("GRID", grid)
-        if args.salience:
+        if args.process_salience:
             thresh = args.salience_thresh
             #norm = (M.flatten(2).max(dim=2).values)[:,:,None,None]
             if args.salglobal:
@@ -1190,7 +1200,6 @@ class Handler():
                 salcrfM = self.crf(imgs, salM, np.zeros_like(salM))
                 self.log("salcrfMshape", salcrfM.shape)
                 allM.append(salcrfM)                
-    
 
         if args.resimages:
             for img_idx, img in enumerate(hardM.squeeze()):
@@ -1199,12 +1208,17 @@ class Handler():
             
         outpath = args.output_folder
         os.makedirs(outpath, exist_ok=True)
-        masks = [np.concatenate((m,m,m), axis=1).transpose(0,2,3,1) for m in allM]
-        names = ["raw-mask", "thresholded-mask", "crf-mask","saliency-map", "thresholded-saliency", "crf-saliency"]
-        for midx, mask in enumerate(masks):
-            for fidx, frame in enumerate(mask):
-                img = Image.fromarray((frame*255).astype(np.uint8))
-                img.save(f"{outpath}/{fidx}-{names[midx]}.png")
+        masks = np.stack([X]+[np.concatenate((m,m,m), axis=1).transpose(0,2,3,1) for m in allM], axis=1)
+        columns = ["raw-mask", "thresholded-mask", "crf-mask","saliency-map", "thresholded-saliency", "crf-saliency"]
+        for fidx in range(masks.shape[0]):
+            if args.concatenated:
+                img = Image.fromarray((masks[fidx]*255).astype(np.uint8))
+                img.save(f"{outpath}/{img_names[fidx]}_with_mask.png")
+            else:
+                for midx in range(1, masks.shape[1]):
+                    img = Image.fromarray((masks[fidx,midx]*255).astype(np.uint8))
+                    img.save(f"{outpath}/{img_names[fidx]}-{columns[midx]}.png")
+
 
     def crf(self, imgs, mask, Y, skip=1):
         mask = mask.copy()
@@ -1463,6 +1477,7 @@ def main():
     parser.add_argument("-higheval", action="store_true")
     parser.add_argument("-separate", action="store_true")
     parser.add_argument("-salience", type=bool, default=True)
+    parser.add_argument("-process_salience", type=bool, default=True)
     parser.add_argument("-salglobal", type=bool, default=True)
     parser.add_argument("-grabcut", action="store_true")
     parser.add_argument("-crf", type=bool, default=True)
@@ -1471,6 +1486,7 @@ def main():
     parser.add_argument("-resimages", action="store_true")
     parser.add_argument("-noevalmode", action="store_true")
     parser.add_argument("-eval", action="store_true")
+    parser.add_argument("-process", action="store_true")
 
 
     parser.add_argument("--salience-thresh", type=float, default="1.5")
@@ -1503,14 +1519,24 @@ def main():
     parser.add_argument("--testsize", type=int, default=5000)
     parser.add_argument("--datasize", type=int, default=100000)
     parser.add_argument("--name", type=str, default="default-model")
+    parser.add_argument("--model", type=str, default="default-model")
     parser.add_argument("--runs", type=int, default=1)
-    parser.add_argument("--input-folder", type=str, default="")
-    parser.add_argument("--output-folder", type=str, default="results")
+    parser.add_argument("--source-imgs", type=str, default="")
+    parser.add_argument("--mask-output-imgs", type=str, default="results")
+    parser.add_argument("--output-video", type=str, default="")
+    parser.add_argument("--binarymaskthreshold", type=float, default=0.5)
 
     args = parser.parse_args()
     args.workers = (1, 1, 1)
     args.live = not args.frozen
     args.inject = not args.noinject
+    args.name = args.model
+    if args.test:
+        args.eval = True
+        args.train = True
+        args.visbesteval = True
+        args.crf = True
+        args.salience = True
     
     print(args)
     H = Handler(args)
@@ -1534,8 +1560,8 @@ def main():
         H.eval()
     if args.viscritic or args.vismasker:
         H.visualize()
-    if args.input_folder:
-        H.segment(folder=args.input_folder)
+    if args.process:
+        H.segment(folder=args.source_imgs)
 
 if __name__=="__main__":
     main()
