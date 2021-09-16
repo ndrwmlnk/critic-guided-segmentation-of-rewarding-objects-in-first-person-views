@@ -36,6 +36,12 @@ This work discusses a learning approach to mask rewarding objects in images usin
     `python main.py -process --model FOLDER_MODEL --source-imgs FOLDER_SOURCE --mask-output-imgs FOLDER_RESULT`
 
     `python main.py -process -concatenated --model FOLDER_MODEL --source-imgs FOLDER_SOURCE --mask-output-imgs FOLDER_RESULT`
+    
+    `python main.py -process -concatenated -softmask --model FOLDER_MODEL --source-imgs FOLDER_SOURCE --mask-output-imgs FOLDER_RESULT`
+    
+    `python main.py -process -concatenated --binarymaskthreshold 0.5 --model FOLDER_MODEL --source-imgs FOLDER_SOURCE --mask-output-imgs FOLDER_RESULT`
+    
+    `python main.py -process -concatenated  -CRF --binarymaskthreshold 0.5 --model FOLDER_MODEL --source-imgs FOLDER_SOURCE --mask-output-imgs FOLDER_RESULT`
 
 3. Reproduce the example evaluation video from the paper.
 
