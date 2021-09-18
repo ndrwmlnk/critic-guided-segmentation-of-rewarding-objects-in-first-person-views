@@ -1210,9 +1210,11 @@ class Handler():
         os.makedirs(outpath, exist_ok=True)
         masks = np.stack([X]+[np.concatenate((m,m,m), axis=1).transpose(0,2,3,1) for m in allM], axis=1)
         columns = ["raw-mask", "thresholded-mask", "crf-mask","saliency-map", "thresholded-saliency", "crf-saliency"]
+        self.log("MASK SHAPE", masks.shape)
         for fidx in range(masks.shape[0]):
             if args.concatenated:
-                img = Image.fromarray((masks[fidx]*255).astype(np.uint8))
+                array = np.concatenate((masks[fidx]*255).astype(np.uint8), axis=-2)
+                img = Image.fromarray(array)
                 img.save(f"{outpath}/{img_names[fidx]}_with_mask.png")
             else:
                 for midx in range(1, masks.shape[1]):
