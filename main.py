@@ -1166,7 +1166,7 @@ class Handler():
             allM.append(hardM)
 
         if args.crf:               
-            crfM = self.crf(imgs, M, np.zeros_like(M))
+            crfM = self.crf(imgs, M, np.zeros_like(M).astype(np.bool).transpose(0,2,3,1))
             self.log("crfMshape", crfM.shape)
             allM.append(crfM)
 
@@ -1197,7 +1197,7 @@ class Handler():
             allM.extend([salM, salhardM])
 
             if args.crf:
-                salcrfM = self.crf(imgs, salM, np.zeros_like(salM))
+                salcrfM = self.crf(imgs, salM, np.zeros_like(salM).astype(np.bool).transpose(0,2,3,1))
                 self.log("salcrfMshape", salcrfM.shape)
                 allM.append(salcrfM)                
 
@@ -1206,7 +1206,7 @@ class Handler():
                 os.makedirs(resultdir+"resimages/")
                 plt.imsave(resultdir+"resimages/"+f"{img_idx}.png")
             
-        outpath = args.output_folder
+        outpath = args.mask_output_imgs
         os.makedirs(outpath, exist_ok=True)
         masks = np.stack([X]+[np.concatenate((m,m,m), axis=1).transpose(0,2,3,1) for m in allM], axis=1)
         columns = ["raw-mask", "thresholded-mask", "crf-mask","saliency-map", "thresholded-saliency", "crf-saliency"]
@@ -1247,6 +1247,7 @@ class Handler():
                 #print("seg values", np.max(seg))
                 M[i,0] = seg
             M = M.transpose(0, 2, 3, 1).astype(np.bool)
+            print("types", M.dtype, Y.dtype, "shapes", M.shape, Y.shape, Y[::skip].shape, Y[::skip].dtype)
             r = np.sum(Y[::skip] & M)/np.sum(Y[::skip] | M)
             res.append(r)
             params.append(param)
@@ -1462,8 +1463,8 @@ def main():
     parser.add_argument("-frozen", action="store_true")
     parser.add_argument("-masker", type=bool, default=True)
     parser.add_argument("-critic", type=bool, default=True)
-    parser.add_argument("-mload", action="store_true")
-    parser.add_argument("-cload", action="store_true")
+    parser.add_argument("-cload", type=bool, default=True)
+    parser.add_argument("-mload", type=bool, default=True)
     parser.add_argument("-staticnorm", type=bool, default=True)
     parser.add_argument("-clippify", action="store_true")
     parser.add_argument("-debug", action="store_true")
@@ -1476,17 +1477,19 @@ def main():
     parser.add_argument("-trunk", action="store_true")
     parser.add_argument("-higheval", action="store_true")
     parser.add_argument("-separate", action="store_true")
-    parser.add_argument("-salience", type=bool, default=True)
-    parser.add_argument("-process_salience", type=bool, default=True)
+    parser.add_argument("-salience", action="store_true")
+    parser.add_argument("-process_salience", action="store_true")
     parser.add_argument("-salglobal", type=bool, default=True)
     parser.add_argument("-grabcut", action="store_true")
-    parser.add_argument("-crf", type=bool, default=True)
+    parser.add_argument("-crf", action="store_true")
     parser.add_argument("-directeval", action="store_true")
     parser.add_argument("-soft", action="store_true")
     parser.add_argument("-resimages", action="store_true")
     parser.add_argument("-noevalmode", action="store_true")
     parser.add_argument("-eval", action="store_true")
     parser.add_argument("-process", action="store_true")
+    parser.add_argument("-test", action="store_true")
+    parser.add_argument("-concatenated", action="store_true")
 
 
     parser.add_argument("--salience-thresh", type=float, default="1.5")
