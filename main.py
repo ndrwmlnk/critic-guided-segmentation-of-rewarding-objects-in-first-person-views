@@ -274,7 +274,7 @@ class Handler():
                   f"{positives.sum()}>{args.high_rew_thresh}__{negatives.sum()}<{args.low_rew_thresh}.txt", "w") as fp:
             fp.write("")
 
-        print(f"\nallframes {len(preds)}  frames>{args.high_rew_thresh}", positives.sum(),
+        self.log(f"\nallframes {len(preds)}  frames>{args.high_rew_thresh}", positives.sum(),
               f" frames<{args.low_rew_thresh}", negatives.sum())
 
         assert (sum(positives) >= 500 and sum(negatives) >= 500)
@@ -295,12 +295,12 @@ class Handler():
         newpreds = T.cat(newpreds, dim=0).cpu()"""
         # assert (preds[positives] == newpreds).all()
 
-        print("n positives", self.Xpos.shape[0])
-        print("positives:", self.Ypos)
-        print("HIGH REW THRESH", args.high_rew_thresh)
+        self.log("n positives", self.Xpos.shape[0])
+        self.log("positives:", self.Ypos)
+        self.log("HIGH REW THRESH", args.high_rew_thresh)
         assert (preds[positives].mean()) > args.high_rew_thresh
         # assert np.mean(self.Ypos[args.rewidx]) > args.high_rew_thresh
-        print("n negatives", self.Xneg.shape[0])
+        self.log("n negatives", self.Xneg.shape[0])
 
         self.XposIdxs = np.arange(len(self.Xpos))
         self.XnegIdxs = np.arange(len(self.Xneg))
@@ -920,7 +920,7 @@ class Handler():
             X = np.load(evaldatapath + "X.npy")/255.0
             if args.resimages:
                 X = np.load("resimgs.npy")
-        print("X", X.shape, np.min(X), np.max(X))
+        self.log("X", X.shape, np.min(X), np.max(X))
         Y = np.expand_dims(np.all(np.load(evaldatapath + "Y.npy"), axis=-1), axis=-1) if not args.resimages else np.zeros((len(X),1,64,64))
 
         X = X[100:5000:2]
@@ -1039,7 +1039,7 @@ class Handler():
             masks = [np.concatenate((m,m,m), axis=1).transpose(0,2,3,1) for m in allM]
             frames = [X]+masks
             frames = [frames[i] for i in reordering[:len(allM)+1]]
-            print("REORDERING", reordering, "FRAMES", len(frames))
+            self.log("REORDERING", reordering, "FRAMES", len(frames))
             frames = np.concatenate(frames, axis=2)
             #flat = lambda x: x.reshape(x.shape[:-2],-1)
             #resquare = lambda x: x.reshape(x.shape[:-1], 64, 64)
@@ -1179,7 +1179,7 @@ class Handler():
             if args.salglobal:
                 norm = (salM*(salM>=0)).mean()*thresh
                 norm = norm
-                print("THRESH", thresh, "mean", (salM*(salM>=0)).mean(), "NORMshape", norm.shape)
+                self.log("THRESH", thresh, "mean", (salM*(salM>=0)).mean(), "NORMshape", norm.shape)
             else:
                 k = int(salM.shape[-1]*salM.shape[-2]*thresh)
                 flat_m = salM.reshape(salM.shape[0],1,-1)
@@ -1543,7 +1543,7 @@ def main():
         args.crf = True
         args.salience = True
     
-    print(args)
+    #print(args)
     H = Handler(args)
     if args.train:
         H.load_data()
