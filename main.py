@@ -883,7 +883,7 @@ class Handler():
             make_video(f"{visname}-GT-sorted.mp4", X, Y, sorting=sorting)
         # ffmpeg.input(resultdir+f"{visname}.avi").output(resultdir+f"{visname}.mp4").run()
 
-    def log(self, *args, key="info", **kargs):
+    def log(self, *args, key="", **kargs):
         if key in ["info"]:
             print(*args, **kargs)
 
@@ -1149,6 +1149,7 @@ class Handler():
             
             mask = masker(batch, embeds)
             M.append(mask.detach().cpu().numpy())
+        print()
 
         print("postprocessing...")
         M = np.concatenate(M, axis=0)
@@ -1236,7 +1237,6 @@ class Handler():
         params = []
         for param in [(a,b,c,d,e,i) for a in w1 for b in alpha for c in beta for d in w2 for e in gamma for i in it]:
             M = mask[::skip]
-            print("parameter:", param)
             #param = (w1, alpha, beta, w2, gamma, it)
             for i, img in enumerate(imgs[::skip]):
                 maskframe = M[i,0]
@@ -1249,7 +1249,7 @@ class Handler():
                 #print("seg values", np.max(seg))
                 M[i,0] = seg
             M = M.transpose(0, 2, 3, 1).astype(np.bool)
-            print("types", M.dtype, Y.dtype, "shapes", M.shape, Y.shape, Y[::skip].shape, Y[::skip].dtype)
+            # print("types", M.dtype, Y.dtype, "shapes", M.shape, Y.shape, Y[::skip].shape, Y[::skip].dtype)
             r = np.sum(Y[::skip] & M)/np.sum(Y[::skip] | M)
             res.append(r)
             params.append(param)
@@ -1258,7 +1258,7 @@ class Handler():
         order = np.argsort(res)
         res = res[order]
         params = np.array(params)[order]
-        print("results:", list(zip(params[-10:], res[-10:])))
+        # print("results:", list(zip(params[-10:], res[-10:])))
         mask[::skip] = M.transpose(0,3,1,2)
         return (mask >= 1)
 
