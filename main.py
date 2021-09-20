@@ -1220,7 +1220,7 @@ class Handler():
             else:
                 for midx in range(1, masks.shape[1]):
                     img = Image.fromarray((masks[fidx,midx]*255).astype(np.uint8))
-                    img.save(f"{outpath}/{img_names[fidx]}-{columns[midx]}.png")
+                    img.save(f"{outpath}/{img_names[fidx]}-{columns[midx-1]}.png")
 
 
     def crf(self, imgs, mask, Y, skip=1):
@@ -1492,6 +1492,7 @@ def main():
     parser.add_argument("-process", action="store_true")
     parser.add_argument("-test", action="store_true")
     parser.add_argument("-concatenated", action="store_true")
+    parser.add_argument("-softmask", action="store_true")
 
 
     parser.add_argument("--salience-thresh", type=float, default="1.5")
