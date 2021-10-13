@@ -2,7 +2,7 @@
 
 ![Segmentation masks learned from sparse reward signal image](imgs/results.gif)
 
-**Figure:** *The trained hourglass model segments different instances of rewarding objects (white and brown tree trunks). The left column shows the input images, the right column shows the masks created by the Hourglass model, and the middle column shows the overlay of the input images and the output masks. The Hourglass model was trained on the [MineRLTreechop-v0](https://minerl.readthedocs.io/en/latest/environments/index.html#minerltreechop-v0) imitation learning dataset, without any label information, but only on the sparce reward signals provided by the environment.*
+**Figure:** *The trained Hourglass model segments different instances of rewarding objects (white and brown tree trunks). The left column shows the input images, the right column shows the masks created by the Hourglass model, and the middle column shows the overlay of the input images and the output masks. The Hourglass model was trained on the [MineRLTreechop-v0](https://minerl.readthedocs.io/en/latest/environments/index.html#minerltreechop-v0) imitation learning dataset, without any label information, but only on the sparce reward signals provided by the environment.*
 
 
 
