@@ -15,7 +15,7 @@ arXiv: [https://arxiv.org/abs/2107.09540](https://arxiv.org/abs/2107.09540)
 
 # How to run our model
 
-0. Create a conda env with the fitting packages with `conda create --name ENV_NAME --file requirements.txt` and activate the environment with `conda activate ENV_NAME`. Then install ffmpeg and minerl separatly with `pip install fmmpeg minerl==0.3.6`.
+0. Create a conda env with the fitting packages with `conda create --name ENV_NAME --file requirements.txt -c conda-forge -c pytorch` and activate the environment with `conda activate ENV_NAME`. Then install ffmpeg and minerl separatly with `pip install ffmpeg gym==0.19.0 minerl==0.3.6`.
 
 1. Train the model on the [MineRLTreechop-v0 dataset](https://minerl.readthedocs.io/en/latest/environments/index.html#minerltreechop-v0). Training images and reward values are automatically downloaded the first time. The trained model is saved in *FOLDER_MODEL*.
 
