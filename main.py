@@ -1028,19 +1028,18 @@ class Handler():
         if iou>self.ious[0] and args.visbesteval:
             reordering = [0,1,4,3,2,7,6,5]
             if not args.crf:
-                reordering.remove(4)
-            if not args.salience:
+                reordering = [0,1,3,2,5]
+            elif not args.salience:
                 reordering.remove(6)
                 reordering.remove(5)
-                if not args.crf:
-                    reordering.remove(7)
+            print(reordering)
             short = len(reordering) != 8
             fosi = 30
             scalef = 3
             font = ImageFont.truetype("./isy_minerl/segm/etc/Ubuntu-R.ttf", fosi)
             masks = [np.concatenate((m,m,m), axis=1).transpose(0,2,3,1) for m in allM]
             frames = [X]+masks
-            frames = [frames[i] for i in reordering[:len(allM)+1]]
+            frames = [(frames[i], print(i))[0] for i in reordering[:len(masks)+1]]
             self.log("REORDERING", reordering, "FRAMES", len(frames))
             frames = np.concatenate(frames, axis=2)
             #flat = lambda x: x.reshape(x.shape[:-2],-1)
@@ -1051,7 +1050,7 @@ class Handler():
             #colors = [np.concatenate(((y&(1-m))|((1-y)&m), (y&m)+0.5*((1-y)&m), np.zeros_like(m)), axis=1).transpose(0,2,3,1) if i in [0,2,3,5,6] else 0.1*np.ones_like(masks[0], dtype=np.uint8)
             #    for (i,m) in enumerate(allM)]
             colors = [np.concatenate(((y&(1-m))+0.5*((1-y)&m), (y&m)+0.5*((1-y)&m), 0.5*((1-y)&m)), axis=1).transpose(0,2,3,1) if i in [0,2,3,5,6] else 0.1*np.ones_like(masks[0], dtype=np.uint8)
-                for (i,m) in enumerate(allM)]
+                for (i,m) in enumerate([m.astype(int) for m in allM])]
             #self.log("MASKS", [m.shape for m in masks])
             colorframes = [X]+colors
             colorframes = [colorframes[i] for i in reordering]
@@ -1059,14 +1058,14 @@ class Handler():
             #frames = np.concatenate((X, np.stack((M,M,M), axis=-1), np.stack((Y,Y,Y), axis=-1)), axis=1)
             frames = np.concatenate([frames, colorframes], axis=1)
             frames = (frames * 255).astype(np.uint8)
-            frames = F.interpolate(T.from_numpy(frames).permute(0,3,1,2), scale_factor=scalef).permute(0,2,3,1).numpy()
+            frames = F.interpolate(T.from_numpy(frames).float().permute(0,3,1,2), scale_factor=scalef).permute(0,2,3,1).numpy()
 
             #frames = np.pad(frames, ((0,0), (32,32), (0,0), (0,0)))
             titles = ["RGB\nimage", "ground\ntruth", "mask", "thresholded\nmask\nIoU=0.41", "mask\nCRF\nIoU=0.45", "saliency\nmap", "thresholded\nsaliency\nIoU=0.22", "salience\nCRF\nIoU=0.11"]
             titles = [titles[i] for i in reordering]
             titlesarray = Image.fromarray(np.zeros((fosi*4, frames.shape[2], 3), dtype=np.uint8))
             draw = ImageDraw.Draw(titlesarray)
-            for i in range(len(allM)+1):
+            for i in range(len(reordering)):
                 text = titles[i]
                 x, y = fosi//5 + 64*scalef*i, fosi//5
                 draw.text((x, y), text, font=font)
@@ -1541,9 +1540,9 @@ def main():
     args.name = args.model
     if args.test:
         args.eval = True
-        args.train = True
+        args.train = True if not args.cload else False
         args.visbesteval = True
-        args.crf = True
+        args.crf = False
         args.salience = True
     
     #print(args)
