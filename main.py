@@ -1,12 +1,11 @@
 import argparse
-import PIL
 from matplotlib import pyplot as plt
 import os
 import sys
 from numpy.core.defchararray import join
 import ctypes
 
-import pydensecrf
+#import pydensecrf
 libgcc_s = ctypes.CDLL('libgcc_s.so.1') # libgcc_s.so.1 error workaround
 from nets import *
 import numpy as np
@@ -21,7 +20,7 @@ import gzip
 import math
 from PIL import Image, ImageDraw, ImageFont
 import ffmpeg
-from pydensecrf import densecrf as denseCRF
+#from pydensecrf import densecrf as denseCRF
 
 
 def get_moving_avg(x, n=10):
